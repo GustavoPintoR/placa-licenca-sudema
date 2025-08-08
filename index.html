@@ -122,15 +122,16 @@ document.getElementById('extractBtn').addEventListener('click', () => {
 
 document.getElementById('resetBtn').addEventListener('click', () => {
   const defaults = {
-    f_licenca: [70, 40],
-    f_processo: [70, 80],
-    f_razao: [70, 140],
-    f_cnpj: [70, 180],
-    f_endereco: [70, 220],
-    f_atividade: [70, 300],
-    f_emissao: [70, 420],
-    f_validade: [300, 420]
+    f_licenca: [200, 125],
+    f_processo: [720, 83],
+    f_razao: [335, 235],
+    f_cnpj: [ 400, 275],
+    f_endereco: [245, 300],
+    f_atividade: [275, 335],
+    f_emissao: [486, 400],
+    f_validade: [485, 437]
   };
+
   for (let id in defaults) {
     const el = document.getElementById(id);
     if (el) { el.style.left = defaults[id][0] + 'px'; el.style.top = defaults[id][1] + 'px'; }
