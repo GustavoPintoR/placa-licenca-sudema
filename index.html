@@ -2,26 +2,142 @@
 <html lang="pt-BR">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
   <title>Preenchedor de Licença (SUDEMA) — Exportar como Imagem</title>
   <style>
-    body { font-family: Arial, sans-serif; margin: 16px; background: #f5f5f5; }
-    textarea { width: 100%; height: 180px; font-family: monospace; }
-    .controls { margin: 12px 0; display:flex; gap:8px; flex-wrap:wrap; }
-    .canvas-wrap { position: relative; width: 100%; max-width: 900px; border: 1px solid #ddd; background: #fff; }
-    .template { display:block; width:100%; height:auto; user-select:none; -webkit-user-drag:none; }
-    .overlay { position:absolute; left:0; top:0; right:0; bottom:0; pointer-events:none; }
-    .field { position:absolute; pointer-events:auto; background: rgba(255,255,255,0.0); padding:2px; font-size:14px; font-weight:600; cursor:move; }
-    .controls button { padding:8px 12px; }
-    .help { max-width:900px; margin-top:12px; background:#fff; padding:12px; border:1px solid #eee; }
-    .download-link { margin-left: 8px; }
+    :root{
+      --bg:#f5f5f5; --card:#fff; --border:#ddd; --muted:#666; --text:#111;
+      --primary:#0b5fff; --primary-600:#084bd1; --focus:#0b5fff55;
+      --gap:12px; --radius:10px;
+      --font-size: clamp(14px, 1.4vw, 16px);
+      --field-font: clamp(12px, 1.6vw, 16px);
+    }
+    *{box-sizing:border-box}
+    body{
+      font-family: system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
+      margin:0; padding:16px; background:var(--bg); color:var(--text);
+      line-height:1.4;
+    }
+    h2{margin:0 0 8px}
+    p{margin:0 0 12px}
+
+    .container{
+      max-width: 980px;
+      margin: 0 auto;
+    }
+
+    textarea{
+      width:100%;
+      min-height: 160px;
+      height: 24vh;
+      resize: vertical;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: var(--font-size);
+      padding:10px;
+      border:1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--card);
+      outline: none;
+    }
+    textarea:focus{ box-shadow: 0 0 0 3px var(--focus) }
+
+    .controls{
+      margin:12px 0; display:flex; flex-wrap:wrap; gap:8px; align-items:center;
+    }
+    .controls .group{
+      display:flex; gap:8px; align-items:center; flex-wrap:wrap;
+      background: var(--card); border:1px solid var(--border);
+      padding:8px; border-radius: var(--radius);
+    }
+    label{ font-size: var(--font-size) }
+
+    select, input[type="range"]{
+      font-size: var(--font-size);
+    }
+
+    button{
+      padding:10px 12px; font-size: var(--font-size); border-radius:8px;
+      border:1px solid var(--border); background:var(--card); cursor:pointer;
+    }
+    button.primary{
+      background: var(--primary); color:#fff; border-color: transparent;
+    }
+    button.primary:hover{ background: var(--primary-600) }
+    button:focus{ outline:none; box-shadow: 0 0 0 3px var(--focus) }
+
+    .download-link{
+      font-size: var(--font-size);
+      color: var(--primary); text-decoration: none;
+      padding:10px 12px; border-radius:8px; border:1px solid var(--border);
+      background: var(--card);
+    }
+
+    .canvas-outer{
+      background: var(--card); border:1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 10px;
+      overflow: hidden;
+    }
+
+    .toolbar{
+      display:flex; align-items:center; gap:8px; justify-content:space-between;
+      margin-bottom:8px; flex-wrap:wrap;
+    }
+    .toolbar .left, .toolbar .right{ display:flex; gap:8px; align-items:center; flex-wrap:wrap }
+
+    .canvas-wrap{
+      position: relative;
+      width: 100%;
+      max-width: 100%;
+      margin: 0 auto;
+      overflow: auto;
+      touch-action: none; /* melhora o arraste com toque */
+    }
+    .template{
+      display:block; width:100%; height:auto; user-select:none; -webkit-user-drag:none;
+    }
+    .overlay{
+      position:absolute; left:0; top:0; right:0; bottom:0;
+      pointer-events:none;
+    }
+
+    /* Campos: posicionamento em % para responsividade */
+    .field{
+      position:absolute; pointer-events:auto; background: rgba(255,255,255,0.0);
+      padding: 2px 4px; font-size: var(--field-font); font-weight: 600;
+      color:#000; cursor: grab;
+      border-radius: 4px;
+      /* sombra leve p/ leitura sobre fundos claros */
+      text-shadow: 0 0 2px rgba(255,255,255,0.6);
+      /* as propriedades left/top/width serão definidas em % via JS */
+    }
+    .field:active{ cursor:grabbing }
+    .field:focus{ outline:none; box-shadow: 0 0 0 3px var(--focus) }
+
+    .help{
+      max-width:980px; margin-top:12px; background:var(--card);
+      padding:12px; border:1px solid #eee; border-radius: var(--radius);
+      font-size: var(--font-size);
+    }
+
+    /* Pequenas telas: empilhar melhor */
+    @media (max-width: 520px){
+      .controls, .toolbar{
+        gap: 6px;
+      }
+      .controls .group{ width:100% }
+      button, .download-link{
+        width:100%;
+      }
+    }
   </style>
 </head>
 <body>
+<div class="container">
   <h2>Preenchedor de Licença (SUDEMA) — Exportar como Imagem</h2>
   <p>Cole o texto e clique em <b>Extrair e Preencher</b>. Posicione os campos e depois clique em <b>Exportar como Imagem</b>.</p>
 
-  <textarea id="inputText">LICENÇA DE OPERAÇÃO:  1308/2024
+  <textarea id="inputText" aria-label="Texto de entrada da licença">LICENÇA:  1308/2024
 PROCESSO N°: 2024-000247/TEC/RLO-0049
 
 RAZÃO SOCIAL: CONTRAL COMERCIO E TRANSPORTE LTDA.
@@ -32,225 +148,376 @@ ATIVIDADE LICENCIADA: LAVRA DE AREIA EM LEITO DE RIO NUMA ÁREA EFETIVA DE EXTRA
 DATA DE EMISSÃO: 03 DE MAIO DE 2024
 DATA DE VALIDADE: 03 DE MAIO DE 2026</textarea>
 
-  <div class="controls">
-    <button id="extractBtn">Extrair e Preencher</button>
+  <div class="controls" role="group" aria-label="Controles principais">
+    <div class="group">
+      <label for="typeField">Tipo de licença:</label>
+      <select id="typeField">
+        <option value="PRÉVIA">Prévia</option>
+        <option value="OPERAÇÃO">Operação</option>
+        <option value="INSTALAÇÃO">Instalação</option>
+        <option value="SIMPLIFICADA">Simplificada</option>
+        <option value="OPERAÇÃO PARA PESQUISA">Operação para pesquisa</option>
+      </select>
+    </div>
+    <button id="extractBtn" class="primary">Extrair e Preencher</button>
     <button id="resetBtn">Resetar posições</button>
-    <button id="exportImageBtn">Exportar como Imagem (PNG)</button>
     <a id="downloadHtml" class="download-link" href="#" download="licenca_filler.html">Baixar HTML</a>
   </div>
 
-  <div class="canvas-wrap" id="canvasWrap" style="width:100%;max-width:900px;">
-    <!-- Substitua template_page1.png pelo PNG do seu PDF (mesmo diretório / mesma origem) -->
-    <img id="templateImg" class="template" src="template_page1.png" alt="Template" />
-    <div class="overlay" id="overlay" aria-hidden="false">
-      <div class="field" id="f_licenca" style="left: 200px; top: 125px;">LICENÇA Nº</div>
-      <div class="field" id="f_processo" style="left: 720px; top: 83px;">PROCESSO Nº</div>
-      <div class="field" id="f_razao" style="left: 335px; top: 235px; width:760px;">RAZÃO SOCIAL</div>
-      <div class="field" id="f_cnpj" style="left: 400px; top: 275px;">CNPJ</div>
-      <div class="field" id="f_endereco" style="left: 245px; top: 300px; width:60%;">ENDEREÇO</div>
-      <div class="field" id="f_atividade" style="left: 275px; top: 335px; width:60%;">ATIVIDADE</div>
-      <div class="field" id="f_emissao" style="left: 486px; top: 400px;">DATA EMISSÃO</div>
-      <div class="field" id="f_validade" style="left: 485px; top: 437px;">DATA VALIDADE</div>
+  <div class="canvas-outer">
+    <div class="toolbar">
+      <div class="left">
+        <label for="zoomRange">Zoom:</label>
+        <input id="zoomRange" type="range" min="50" max="200" step="5" value="100" aria-label="Zoom do template">
+        <span id="zoomLabel">100%</span>
+      </div>
+      <div class="right">
+        <button id="exportImageBtn" class="primary">Exportar como Imagem (PNG)</button>
+      </div>
+    </div>
+
+    <div class="canvas-wrap" id="canvasWrap">
+      <img id="templateImg" class="template" src="images/template_page1.png" alt="Modelo da licença" />
+      <div class="overlay" id="overlay" aria-hidden="false">
+        <!-- Posições iniciais: em % relativas ao tamanho da imagem -->
+        <div class="field" id="f_tipo"      style="left:41.7%; top:9.0%; width:auto;" tabindex="0">TIPO</div>
+        <div class="field" id="f_licenca"   style="left:22.2%; top:14.0%; width:auto;" tabindex="0">LICENÇA Nº</div>
+        <div class="field" id="f_processo"  style="left:80.0%; top:9.5%; width:auto;" tabindex="0">PROCESSO Nº</div>
+        <div class="field" id="f_razao"     style="left:37.2%; top:26.5%; width:60%;" tabindex="0">RAZÃO SOCIAL</div>
+        <div class="field" id="f_cnpj"      style="left:44.4%; top:31.0%; width:auto;" tabindex="0">CNPJ</div>
+        <div class="field" id="f_endereco"  style="left:27.2%; top:33.7%; width:60%;" tabindex="0">ENDEREÇO</div>
+        <div class="field" id="f_atividade" style="left:30.5%; top:37.4%; width:60%;" tabindex="0">ATIVIDADE</div>
+        <div class="field" id="f_emissao"   style="left:54.0%; top:44.5%; width:auto;" tabindex="0">DATA EMISSÃO</div>
+        <div class="field" id="f_validade"  style="left:53.9%; top:48.5%; width:auto;" tabindex="0">DATA VALIDADE</div>
+      </div>
     </div>
   </div>
 
-  <div class="help">
+  <div class="help" aria-live="polite">
     <strong>Instruções rápidas</strong>
     <ol>
       <li>Cole o texto da licença e clique em <b>Extrair e Preencher</b>.</li>
-      <li>Arraste os campos diretamente sobre o modelo para posicioná-los com precisão.</li>
-      <li>Quando estiver satisfeito, clique em <b>Exportar como PDF</b>.</li>
+      <li>Arraste os campos sobre o modelo (funciona com toque e mouse).</li>
+      <li>Ajuste o <b>Zoom</b> se necessário e clique em <b>Exportar como Imagem</b>.</li>
     </ol>
-    <p><em>Observação:</em> Este arquivo inclui uma cópia da imagem da primeira página do PDF (se a conversão foi
-      possível). Se você não ver o modelo, abra a pasta <code>/mnt/data/licenca_filler/</code> e substitua
-      <code>template_page1.png</code> por uma imagem do seu PDF.</p>
+    <p><em>Observação:</em> Se o modelo não aparecer, verifique <code>images/template_page1.png</code> no mesmo domínio.</p>
   </div>
+</div>
 
 <script>
-/* ---------- util: draggable ---------- */
-function makeDraggable(el) {
-  el.onmousedown = function (e) {
-    e.preventDefault();
-    const parent = document.getElementById('canvasWrap');
-    const parentRect = parent.getBoundingClientRect();
-    const rect = el.getBoundingClientRect();
-    const offsetX = e.clientX - rect.left;
-    const offsetY = e.clientY - rect.top;
-    function onMove(ev) {
-      let x = ev.clientX - parentRect.left - offsetX;
-      let y = ev.clientY - parentRect.top - offsetY;
-      if (x < 0) x = 0;
-      if (y < 0) y = 0;
-      el.style.left = Math.round(x) + 'px';
-      el.style.top = Math.round(y) + 'px';
-    }
-    function onUp() {
-      window.removeEventListener('mousemove', onMove);
-      window.removeEventListener('mouseup', onUp);
-    }
-    window.addEventListener('mousemove', onMove);
-    window.addEventListener('mouseup', onUp);
-  };
-}
-document.querySelectorAll('.field').forEach(el => makeDraggable(el));
-
-/* ---------- parsing simples (linhas começando com rótulos) ---------- */
-function parseAndFill(text) {
-  const lines = text.split('\n').map(l => l.trim());
-  const find = (label) => {
-    for (const line of lines) {
-      if (line.toUpperCase().startsWith(label.toUpperCase())) {
-        return line.substring(label.length).trim();
-      }
-    }
-    return null;
-  };
-  document.getElementById('f_licenca').innerText = find("LICENÇA DE OPERAÇÃO:") || find("LICENCA DE OPERACAO:") || '—';
-  document.getElementById('f_processo').innerText = find("PROCESSO N°:") || find("PROCESSO N:") || '—';
-  document.getElementById('f_razao').innerText = find("RAZÃO SOCIAL:") || find("RAZAO SOCIAL:") || '—';
-  document.getElementById('f_cnpj').innerText = find("CNPJ:") || '—';
-  document.getElementById('f_endereco').innerText = find("ENDEREÇO:") || find("ENDERECO:") || '—';
-  document.getElementById('f_atividade').innerText = find("ATIVIDADE LICENCIADA:") || find("ATIVIDADE:") || '—';
-  document.getElementById('f_emissao').innerText = find("DATA DE EMISSÃO:") || find("DATA DE EMISSAO:") || '—';
-  document.getElementById('f_validade').innerText = find("DATA DE VALIDADE:") || '—';
-}
-
-/* ---------- botões ---------- */
-document.getElementById('extractBtn').addEventListener('click', () => {
-  parseAndFill(document.getElementById('inputText').value || '');
-});
-
-document.getElementById('resetBtn').addEventListener('click', () => {
-  const defaults = {
-    f_licenca: [200, 125],
-    f_processo: [720, 83],
-    f_razao: [335, 235],
-    f_cnpj: [ 400, 275],
-    f_endereco: [245, 300],
-    f_atividade: [275, 335],
-    f_emissao: [486, 400],
-    f_validade: [485, 437]
-  };
-
-  for (let id in defaults) {
-    const el = document.getElementById(id);
-    if (el) { el.style.left = defaults[id][0] + 'px'; el.style.top = defaults[id][1] + 'px'; }
-  }
-});
-
-/* ---------- download HTML ---------- */
-document.getElementById('downloadHtml').href = window.URL.createObjectURL(
-  new Blob([document.documentElement.outerHTML], { type: 'text/html' })
-);
-
-/* ---------- exportar como imagem (PNG) usando html2canvas ---------- */
-document.getElementById('exportImageBtn').addEventListener('click', async () => {
-  // carrega html2canvas se necessário
-  if (!window.html2canvas) {
-    await new Promise((res, rej) => {
-      const s = document.createElement('script');
-      s.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
-      s.onload = res; s.onerror = () => rej(new Error('Falha ao carregar html2canvas'));
-      document.body.appendChild(s);
-    }).catch(err => { alert('Erro ao carregar dependência: ' + err.message); return; });
-  }
-
+(function(){
   const wrap = document.getElementById('canvasWrap');
   const img = document.getElementById('templateImg');
+  const overlay = document.getElementById('overlay');
+  const zoomRange = document.getElementById('zoomRange');
+  const zoomLabel = document.getElementById('zoomLabel');
 
-  // espera imagem carregar
-  await new Promise(resolve => {
-    if (img.complete && img.naturalWidth !== 0) return resolve();
-    img.onload = resolve;
-    img.onerror = resolve;
-  });
-
-  // dimensões reais do template (pixels da imagem)
-  const origWidth = img.naturalWidth || img.width;
-  const origHeight = img.naturalHeight || img.height;
-
-  // dimensões do wrapper exibido na tela
-  const wrapRect = wrap.getBoundingClientRect();
-  const displayWidth = wrapRect.width || origWidth;
-  const displayHeight = wrapRect.height || origHeight;
-
-  // escala necessária para posicionar campos corretamente sobre o template real
-  const scale = origWidth / displayWidth;
-
-  // clona o wrap (para não alterar a interface do usuário)
-  const clone = wrap.cloneNode(true);
-
-  // Ajusta tamanho do clone para as dimensões reais da imagem (em px)
-  clone.style.width = origWidth + 'px';
-  clone.style.maxWidth = 'none';
-  clone.style.height = 'auto';
-  clone.style.position = 'fixed';
-  clone.style.left = '-9999px';
-  clone.style.top = '-9999px';
-  clone.style.zIndex = 9999;
-
-  // atualiza a imagem no clone (seta largura real)
-  const cloneImg = clone.querySelector('.template');
-  if (cloneImg) {
-    cloneImg.style.width = origWidth + 'px';
-    cloneImg.style.height = 'auto';
+  /* ---- Persistência simples de posições por template ---- */
+  const STORAGE_KEY = 'licenca_positions_v2';
+  function getTemplateKey(){
+    return (img.getAttribute('src') || 'default').split('/').pop();
+  }
+  function loadPositions(){
+    const all = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+    return all[getTemplateKey()] || null;
+  }
+  function savePositions(){
+    const fields = overlay.querySelectorAll('.field');
+    const data = {};
+    fields.forEach(f=>{
+      data[f.id] = {
+        left: f.style.left,
+        top: f.style.top,
+        width: f.style.width || 'auto',
+        fontSize: window.getComputedStyle(f).fontSize
+      };
+    });
+    const all = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+    all[getTemplateKey()] = data;
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(all));
   }
 
-  // reposiciona e escala cada campo no clone com base nas posições reais do DOM visível
-  const originalFields = wrap.querySelectorAll('.field');
-  const cloneFields = clone.querySelectorAll('.field');
+  /* ---- Drag com Pointer Events (mouse + toque) em % ---- */
+  function pct(val, base){ return Math.max(0, Math.min(100, (val/base)*100)); }
+  function makeDraggable(el){
+    let startX=0, startY=0, baseLeft=0, baseTop=0;
+    let dragging=false;
 
-  originalFields.forEach((origField, idx) => {
-    const cloneField = cloneFields[idx];
-    if (!cloneField) return;
-    const fRect = origField.getBoundingClientRect();
-    const leftRel = fRect.left - wrapRect.left;
-    const topRel = fRect.top - wrapRect.top;
-    const widthRel = fRect.width;
-    const heightRel = fRect.height;
+    const onDown = (e)=>{
+      e.preventDefault();
+      el.setPointerCapture?.(e.pointerId);
+      dragging=true;
+      const rect = wrap.getBoundingClientRect();
+      startX = e.clientX;
+      startY = e.clientY;
 
-    cloneField.style.left = Math.round(leftRel * scale) + 'px';
-    cloneField.style.top = Math.round(topRel * scale) + 'px';
-    cloneField.style.width = Math.round(widthRel * scale) + 'px';
-    // scale font-size
-    const origFont = parseFloat(window.getComputedStyle(origField).fontSize || 14);
-    cloneField.style.fontSize = Math.max(8, Math.round(origFont * scale)) + 'px';
-    // maintain font-weight etc already inline
+      // computar valores atuais em px a partir de %
+      const leftPct = parseFloat(el.style.left||'0');
+      const topPct = parseFloat(el.style.top||'0');
+      baseLeft = (leftPct/100)*rect.width;
+      baseTop = (topPct/100)*rect.height;
+
+      // evitar scroll por gesto enquanto arrasta
+      wrap.style.touchAction = 'none';
+    };
+
+    const onMove = (e)=>{
+      if(!dragging) return;
+      const rect = wrap.getBoundingClientRect();
+      let x = baseLeft + (e.clientX - startX);
+      let y = baseTop + (e.clientY - startY);
+
+      // limitar aos limites do wrapper
+      x = Math.max(0, Math.min(x, rect.width - el.offsetWidth));
+      y = Math.max(0, Math.min(y, rect.height - el.offsetHeight));
+
+      el.style.left = pct(x, rect.width) + '%';
+      el.style.top = pct(y, rect.height) + '%';
+    };
+
+    const onUp = (e)=>{
+      if(!dragging) return;
+      dragging=false;
+      el.releasePointerCapture?.(e.pointerId);
+      wrap.style.touchAction = 'auto';
+      savePositions();
+    };
+
+    el.addEventListener('pointerdown', onDown);
+    window.addEventListener('pointermove', onMove);
+    window.addEventListener('pointerup', onUp);
+    el.addEventListener('keydown', (ev)=>{
+      // acessibilidade por teclado: setas movem 0.5%
+      const step = ev.shiftKey ? 2 : 0.5;
+      let l = parseFloat(el.style.left||'0');
+      let t = parseFloat(el.style.top||'0');
+      let moved=false;
+      if(ev.key==='ArrowLeft'){ l = Math.max(0, l - step); moved=true; }
+      if(ev.key==='ArrowRight'){ l = Math.min(100, l + step); moved=true; }
+      if(ev.key==='ArrowUp'){ t = Math.max(0, t - step); moved=true; }
+      if(ev.key==='ArrowDown'){ t = Math.min(100, t + step); moved=true; }
+      if(moved){ ev.preventDefault(); el.style.left = l+'%'; el.style.top = t+'%'; savePositions(); }
+    });
+  }
+  document.querySelectorAll('.field').forEach(makeDraggable);
+
+  /* ---- Redimensionamento responsivo baseado em % ---- */
+  function applyZoom(){
+    const z = parseInt(zoomRange.value,10);
+    zoomLabel.textContent = z + '%';
+    wrap.style.transform = 'scale(' + (z/100) + ')';
+    wrap.style.transformOrigin = 'top left';
+    // ajustar container para permitir scroll quando zoom > 100%
+    wrap.parentElement.style.overflow = z>100 ? 'auto' : 'hidden';
+    // ajustar largura do container para não “cortar” no zoom
+    wrap.style.width = (z>=100 ? (z/100*100) : 100) + '%';
+  }
+  zoomRange.addEventListener('input', applyZoom);
+
+  /* ---- Parsing e preenchimento ---- */
+  function parseAndFill(text) {
+    const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
+    const find = (label) => {
+      const L = label.toUpperCase();
+      for (const line of lines) {
+        const t = line.toUpperCase();
+        if (t.startsWith(L)) return line.substring(label.length).trim();
+        // lidar com variações N° / Nº / N:
+        if (L.includes('PROCESSO N') && t.startsWith('PROCESSO')) {
+          const after = line.split(':').slice(1).join(':').trim();
+          if(after) return after;
+        }
+      }
+      return null;
+    };
+    document.getElementById('f_tipo').innerText = document.getElementById('typeField').value || '—';
+    document.getElementById('f_licenca').innerText =
+      find("LICENÇA:") || find("LICENCA:") || '—';
+    document.getElementById('f_processo').innerText =
+      find("PROCESSO N°:") || find("PROCESSO Nº:") || find("PROCESSO N:") || '—';
+    document.getElementById('f_razao').innerText =
+      find("RAZÃO SOCIAL:") || find("RAZAO SOCIAL:") || '—';
+    document.getElementById('f_cnpj').innerText =
+      find("CNPJ:") || '—';
+    document.getElementById('f_endereco').innerText =
+      find("ENDEREÇO:") || find("ENDERECO:") || '—';
+    document.getElementById('f_atividade').innerText =
+      find("ATIVIDADE LICENCIADA:") || find("ATIVIDADE:") || '—';
+    document.getElementById('f_emissao').innerText =
+      find("DATA DE EMISSÃO:") || find("DATA DE EMISSAO:") || '—';
+    document.getElementById('f_validade').innerText =
+      find("DATA DE VALIDADE:") || '—';
+  }
+
+  document.getElementById('extractBtn').addEventListener('click', () => {
+    parseAndFill(document.getElementById('inputText').value || '');
   });
 
-  document.body.appendChild(clone);
+  /* ---- Reset: volta aos valores iniciais (em %) e limpa storage ---- */
+  document.getElementById('resetBtn').addEventListener('click', () => {
+    const defaults = {
+      f_tipo: ["41.7%","9.0%","auto"],
+      f_licenca: ["22.2%","14.0%","auto"],
+      f_processo: ["80.0%","9.5%","auto"],
+      f_razao: ["37.2%","26.5%","60%"],
+      f_cnpj: ["44.4%","31.0%","auto"],
+      f_endereco: ["27.2%","33.7%","60%"],
+      f_atividade: ["30.5%","37.4%","60%"],
+      f_emissao: ["54.0%","44.5%","auto"],
+      f_validade: ["53.9%","48.5%","auto"]
+    };
+    for (let id in defaults) {
+      const el = document.getElementById(id);
+      if (el) {
+        el.style.left = defaults[id][0];
+        el.style.top = defaults[id][1];
+        el.style.width = defaults[id][2];
+      }
+    }
+    const all = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+    delete all[getTemplateKey()];
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(all));
+  });
 
-  try {
-    // captura com html2canvas
-    const canvas = await html2canvas(clone, {
-      useCORS: true,
-      backgroundColor: null,
-      // como já ajustamos para o tamanho real (origWidth), deixamos scale = 1
-      scale: 1,
-      logging: false
+  /* ---- Download do HTML atual ---- */
+  function updateDownloadHtml(){
+    // Remover transform/zoom para salvar HTML “limpo”
+    const prevTransform = wrap.style.transform;
+    wrap.style.transform = '';
+    const blob = new Blob([document.documentElement.outerHTML], { type: 'text/html' });
+    document.getElementById('downloadHtml').href = window.URL.createObjectURL(blob);
+    wrap.style.transform = prevTransform;
+  }
+  // atualizar link quando algo muda
+  document.addEventListener('input', updateDownloadHtml);
+  document.addEventListener('click', updateDownloadHtml);
+
+  /* ---- Exportar PNG com html2canvas ---- */
+  document.getElementById('exportImageBtn').addEventListener('click', async () => {
+    if (!window.html2canvas) {
+      try{
+        await new Promise((res, rej) => {
+          const s = document.createElement('script');
+          s.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+          s.onload = res; s.onerror = () => rej(new Error('Falha ao carregar html2canvas'));
+          document.body.appendChild(s);
+        });
+      }catch(err){
+        alert('Erro ao carregar dependência: ' + err.message);
+        return;
+      }
+    }
+
+    // garantir que a imagem carregou
+    await new Promise(resolve => {
+      if (img.complete && img.naturalWidth) return resolve();
+      img.onload = resolve; img.onerror = resolve;
     });
 
-    // converte para blob e inicia download
-    canvas.toBlob(function (blob) {
-      if (!blob) { alert('Falha ao gerar a imagem.'); return; }
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'licenca_preenchida.png';
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      URL.revokeObjectURL(url);
-    }, 'image/png', 1.0);
+    const origWidth = img.naturalWidth || img.width;
+    const origHeight = img.naturalHeight || img.height;
 
-  } catch (err) {
-    console.error('Erro na captura:', err);
-    alert('Erro ao capturar imagem: ' + err.message);
-  } finally {
-    // limpa clone da DOM
-    if (clone && clone.parentNode) clone.parentNode.removeChild(clone);
+    // Clonar um container “limpo” no tamanho real
+    const clone = document.createElement('div');
+    clone.style.position = 'fixed';
+    clone.style.left = '-9999px';
+    clone.style.top = '-9999px';
+    clone.style.width = origWidth + 'px';
+    clone.style.height = 'auto';
+    clone.style.background = 'transparent';
+
+    // imagem base
+    const cloneImg = img.cloneNode(true);
+    cloneImg.style.width = origWidth + 'px';
+    cloneImg.style.height = 'auto';
+    cloneImg.removeAttribute('id');
+
+    const cloneOverlay = overlay.cloneNode(true);
+
+    // converter todos os campos para px baseados em % relativos ao tamanho real
+    const fieldsOrig = overlay.querySelectorAll('.field');
+    const fieldsClone = cloneOverlay.querySelectorAll('.field');
+
+    fieldsOrig.forEach((origField, idx) => {
+      const cf = fieldsClone[idx];
+      const leftPct = parseFloat(origField.style.left||'0');
+      const topPct = parseFloat(origField.style.top||'0');
+      const widthCss = origField.style.width || 'auto';
+
+      cf.style.left = Math.round((leftPct/100) * origWidth) + 'px';
+      cf.style.top  = Math.round((topPct/100) * origWidth * (img.naturalHeight/img.naturalWidth)) + 'px';
+
+      if(widthCss.endsWith('%')){
+        const wPct = parseFloat(widthCss);
+        cf.style.width = Math.round((wPct/100) * origWidth) + 'px';
+      }else{
+        cf.style.width = widthCss; // auto ou px
+      }
+
+      // ajustar fonte proporcionalmente (baseado em largura)
+      const origFont = parseFloat(getComputedStyle(origField).fontSize);
+      // fator aproximado pela escala largura exibida vs natural
+      const displayWidth = wrap.getBoundingClientRect().width || origWidth;
+      const scale = origWidth / displayWidth;
+      cf.style.fontSize = Math.max(8, Math.round(origFont * scale)) + 'px';
+    });
+
+    const inner = document.createElement('div');
+    inner.style.position = 'relative';
+    inner.style.width = origWidth + 'px';
+    inner.appendChild(cloneImg);
+    cloneOverlay.style.pointerEvents = 'none';
+    cloneOverlay.style.left = '0'; cloneOverlay.style.top = '0'; cloneOverlay.style.right = '0'; cloneOverlay.style.bottom = '0';
+    inner.appendChild(cloneOverlay);
+    clone.appendChild(inner);
+    document.body.appendChild(clone);
+
+    try{
+      const canvas = await html2canvas(inner, {
+        useCORS:true, backgroundColor:null, scale:1, logging:false
+      });
+      canvas.toBlob(function (blob) {
+        if (!blob) { alert('Falha ao gerar a imagem.'); return; }
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url; a.download = 'licenca_preenchida.png';
+        document.body.appendChild(a); a.click(); a.remove();
+        URL.revokeObjectURL(url);
+      }, 'image/png', 1.0);
+    }catch(err){
+      console.error('Erro na captura:', err);
+      alert('Erro ao capturar imagem: ' + err.message);
+    }finally{
+      clone.remove();
+    }
+  });
+
+  /* ---- Carregar posições salvas ao iniciar ---- */
+  function restorePositions(){
+    const saved = loadPositions();
+    if(!saved) return;
+    Object.entries(saved).forEach(([id, st])=>{
+      const el = document.getElementById(id);
+      if(!el) return;
+      if(st.left) el.style.left = st.left;
+      if(st.top) el.style.top = st.top;
+      if(st.width) el.style.width = st.width;
+      if(st.fontSize) el.style.fontSize = st.fontSize;
+    });
   }
-});
+
+  // Inicialização
+  function init(){
+    applyZoom();
+    restorePositions();
+    updateDownloadHtml();
+  }
+
+  // Esperar imagem para melhor cálculo de proporções
+  if (img.complete) init();
+  else img.onload = init;
+
+})();
 </script>
 </body>
 </html>
