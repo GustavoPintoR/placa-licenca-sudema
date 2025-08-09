@@ -180,15 +180,15 @@ DATA DE VALIDADE: 03 DE MAIO DE 2026</textarea>
       <img id="templateImg" class="template" src="images/template_page1.png" alt="Modelo da licença" />
       <div class="overlay" id="overlay" aria-hidden="false">
         <!-- Posições iniciais: em % relativas ao tamanho da imagem -->
-        <div class="field" id="f_tipo"      style="left:41.7%; top:9.0%; width:auto;" tabindex="0">TIPO</div>
-        <div class="field" id="f_licenca"   style="left:22.2%; top:14.0%; width:auto;" tabindex="0">LICENÇA Nº</div>
-        <div class="field" id="f_processo"  style="left:80.0%; top:9.5%; width:auto;" tabindex="0">PROCESSO Nº</div>
-        <div class="field" id="f_razao"     style="left:37.2%; top:26.5%; width:60%;" tabindex="0">RAZÃO SOCIAL</div>
-        <div class="field" id="f_cnpj"      style="left:44.4%; top:31.0%; width:auto;" tabindex="0">CNPJ</div>
-        <div class="field" id="f_endereco"  style="left:27.2%; top:33.7%; width:60%;" tabindex="0">ENDEREÇO</div>
-        <div class="field" id="f_atividade" style="left:30.5%; top:37.4%; width:60%;" tabindex="0">ATIVIDADE</div>
-        <div class="field" id="f_emissao"   style="left:54.0%; top:44.5%; width:auto;" tabindex="0">DATA EMISSÃO</div>
-        <div class="field" id="f_validade"  style="left:53.9%; top:48.5%; width:auto;" tabindex="0">DATA VALIDADE</div>
+        <div class="field" id="f_tipo"      style="left:35%; top:11%; width:auto;" tabindex="0">TIPO</div>
+        <div class="field" id="f_licenca"   style="left:80%; top:11%; width:auto;" tabindex="0">LICENÇA Nº</div>
+        <div class="field" id="f_processo"  style="left:21%; top:18%; width:auto;" tabindex="0">PROCESSO Nº</div>
+        <div class="field" id="f_razao"     style="left:40%; top:35%; width:auto;" tabindex="0">RAZÃO SOCIAL</div>
+        <div class="field" id="f_cnpj"      style="left:50%; top:40%; width:auto;" tabindex="0">CNPJ</div>
+        <div class="field" id="f_endereco"  style="left:25%; top:44.5%; width:auto;" tabindex="0">ENDEREÇO</div>
+        <div class="field" id="f_atividade" style="left:30.5%; top:47%; width:60%;" tabindex="0">ATIVIDADE</div>
+        <div class="field" id="f_emissao"   style="left:54%; top:58%; width:auto;" tabindex="0">DATA EMISSÃO</div>
+        <div class="field" id="f_validade"  style="left:54%; top:63%; width:auto;" tabindex="0">DATA VALIDADE</div>
       </div>
     </div>
   </div>
@@ -356,16 +356,17 @@ DATA DE VALIDADE: 03 DE MAIO DE 2026</textarea>
   /* ---- Reset: volta aos valores iniciais (em %) e limpa storage ---- */
   document.getElementById('resetBtn').addEventListener('click', () => {
     const defaults = {
-      f_tipo: ["41.7%","9.0%","auto"],
-      f_licenca: ["22.2%","14.0%","auto"],
-      f_processo: ["80.0%","9.5%","auto"],
-      f_razao: ["37.2%","26.5%","60%"],
-      f_cnpj: ["44.4%","31.0%","auto"],
-      f_endereco: ["27.2%","33.7%","60%"],
-      f_atividade: ["30.5%","37.4%","60%"],
-      f_emissao: ["54.0%","44.5%","auto"],
-      f_validade: ["53.9%","48.5%","auto"]
+      f_tipo: ["35%","11%","auto"],
+      f_licenca: ["80%","11%","auto"],
+      f_processo: ["21%","18%","auto"],
+      f_razao: ["40%","35%","auto"],
+      f_cnpj: ["50%","40%","auto"],
+      f_endereco: ["25%","44.5%","auto"],
+      f_atividade: ["30.5%","47%","60%"],
+      f_emissao: ["54%","58%","auto"],
+      f_validade: ["54%","63%","auto"]
     };
+
     for (let id in defaults) {
       const el = document.getElementById(id);
       if (el) {
